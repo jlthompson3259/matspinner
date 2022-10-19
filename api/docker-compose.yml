@@ -8,4 +8,10 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - 8085:8085
+  spinsvc:
+    image: matspinner/spinsvc
+    build:
+      context: ./spinsvc
+      dockerfile: ./Dockerfile
+    ports:
       - 8086:8086

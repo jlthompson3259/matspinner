@@ -11,7 +11,7 @@ import (
 type Service interface {
 	Get(ctx context.Context, ids ...int) ([]Tickets, error)
 	Set(ctx context.Context, tickets ...Tickets) ([]Tickets, error)
-	Increment(ctx context.Context, gemIds ...int) ([]Tickets, error)
+	Increment(ctx context.Context, ids ...int) ([]Tickets, error)
 }
 
 type Tickets struct {
@@ -61,6 +61,10 @@ func (svc *ticketService) Increment(ctx context.Context, ids ...int) ([]Tickets,
 // Set implements Service
 func (svc *ticketService) Set(ctx context.Context, tickets ...Tickets) ([]Tickets, error) {
 	for _, t := range tickets {
+		ticks := t.Tickets
+		if ticks < 0 {
+			ticks = 0
+		}
 		svc.tickets[t.Id] = t.Tickets
 		level.Debug(svc.logger).Log("debug", "set tickets", "id", t.Id, "tickets", t.Tickets)
 	}

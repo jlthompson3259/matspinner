@@ -1,15 +1,12 @@
-package ticketsvc
+package spinsvc
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -19,11 +16,6 @@ import (
 	"github.com/go-kit/log"
 )
 
-var (
-	ErrMissingIds = errors.New("missing ids")
-	ErrParsingIds = errors.New("error parsing ids, should be ints")
-)
-
 func MakeHTTPHandler(e EndpointSet, logger log.Logger) http.Handler {
 	r := mux.NewRouter()
 	options := []httptransport.ServerOption{
@@ -31,58 +23,34 @@ func MakeHTTPHandler(e EndpointSet, logger log.Logger) http.Handler {
 		httptransport.ServerErrorEncoder(encodeError),
 	}
 
-	r.Methods("GET").Path("/tickets").Handler(httptransport.NewServer(
-		e.GetEndpoint,
-		decodeGetRequest,
+	r.Methods("POST").Path("/spin").Handler(httptransport.NewServer(
+		e.SpinEndpoint,
+		decodeSpinRequest,
 		encodeResponse,
 		options...,
 	))
-	r.Methods("PUT").Path("/tickets").Handler(httptransport.NewServer(
-		e.SetEndpoint,
-		decodeSetRequest,
-		encodeResponse,
-		options...,
-	))
-	r.Methods("POST").Path("/tickets/increment").Handler(httptransport.NewServer(
-		e.IncrementEndpoint,
-		decodeIncrementRequest,
+	r.Methods("PUT").Path("/get-last-spin").Handler(httptransport.NewServer(
+		e.GetLastEndpoint,
+		decodeGetLastRequest,
 		encodeResponse,
 		options...,
 	))
 	return r
 }
 
-/** server decode/encode **/
-func decodeGetRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	q := r.URL.Query()
-	if !q.Has("ids") {
-		return nil, ErrMissingIds
-	}
-	ids, err := decodeIdsQueryString(q.Get("ids"))
-	if err != nil {
-		return nil, ErrParsingIds
-	}
-	return getRequest{Ids: ids}, nil
-}
-
-func decodeSetRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var tickets []Tickets
-	if err := json.NewDecoder(r.Body).Decode(&tickets); err != nil {
+/** server encode/decode **/
+func decodeSpinRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var participantIds []int
+	if err := json.NewDecoder(r.Body).Decode(&participantIds); err != nil {
 		return nil, err
 	}
-	return setRequest{
-		Tickets: tickets,
+	return spinRequest{
+		ParticipantIds: participantIds,
 	}, nil
 }
 
-func decodeIncrementRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var ids []int
-	if err := json.NewDecoder(r.Body).Decode(&ids); err != nil {
-		return nil, err
-	}
-	return incrementRequest{
-		Ids: ids,
-	}, nil
+func decodeGetLastRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	return getLastRequest{}, nil
 }
 
 // errorer is implemented by all concrete response types that may contain
@@ -119,22 +87,10 @@ func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	})
 }
 
-func decodeIdsQueryString(idStr string) (ids []int, err error) {
-	strs := strings.Split(idStr, ",")
-	ids = make([]int, len(strs))
-	for i, v := range strs {
-		ids[i], err = strconv.Atoi(v)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return ids, nil
-}
-
 func codeFrom(err error) int {
 	switch err {
-	case ErrMissingIds, ErrParsingIds:
-		return http.StatusBadRequest
+	case ErrNoSpin, ErrNoTickets:
+		return http.StatusInternalServerError
 	default:
 		return http.StatusInternalServerError
 	}
@@ -149,26 +105,14 @@ func decodeResponse(ctx context.Context, resp *http.Response) (interface{}, erro
 	return response, nil
 }
 
-func encodeGetRequest(ctx context.Context, req *http.Request, request interface{}) error {
-	r := request.(getRequest)
-	var qStr string
-	{
-		qStr = encodeIdsQueryString(r.Ids)
-		qStr = url.QueryEscape(qStr)
-	}
-	req.URL.Path = "/tickets"
-	req.URL.Query().Add("ids", qStr)
+func encodeSpinRequest(ctx context.Context, req *http.Request, request interface{}) error {
+	req.URL.Path = "/spin"
+	return encodeRequest(ctx, req, request)
+}
+
+func encodeGetLastRequest(ctx context.Context, req *http.Request, request interface{}) error {
+	req.URL.Path = "/get-last-spin"
 	return nil
-}
-
-func encodeSetRequest(ctx context.Context, req *http.Request, request interface{}) error {
-	req.URL.Path = "/tickets"
-	return encodeRequest(ctx, req, request)
-}
-
-func encodeIncrementRequest(ctx context.Context, req *http.Request, request interface{}) error {
-	req.URL.Path = "/tickets/increment"
-	return encodeRequest(ctx, req, request)
 }
 
 // encodeRequest likewise JSON-encodes the request to the HTTP request body.

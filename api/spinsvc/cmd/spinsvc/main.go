@@ -10,11 +10,12 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 
+	"github.com/jlthompson3259/matspinner/spinsvc"
 	"github.com/jlthompson3259/matspinner/ticketsvc"
 )
 
 const (
-	defaultHttpPort = "8085"
+	defaultHttpPort = "8086"
 )
 
 func main() {
@@ -29,15 +30,20 @@ func main() {
 		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	}
 
-	var service ticketsvc.Service
+	ticketService, err := ticketsvc.MakeClientEndpoints("http://localhost:8085")
+	if err != nil {
+		level.Error(logger).Log("error", err)
+	}
+
+	var service spinsvc.Service
 	{
-		service = ticketsvc.NewService(log.With(logger, "component", "service"))
-		service = ticketsvc.LoggingMiddleware(log.With(logger, "component", "loggingMiddleware"))(service)
+		service = spinsvc.NewService(log.With(logger, "component", "service"), &ticketService)
+		service = spinsvc.LoggingMiddleware(log.With(logger, "component", "loggingMiddleware"))(service)
 	}
 
 	var (
-		endpoints   = ticketsvc.MakeServerEndpoints(service)
-		httpHandler = ticketsvc.MakeHTTPHandler(endpoints, log.With(logger, "component", "http"))
+		endpoints   = spinsvc.MakeServerEndpoints(service)
+		httpHandler = spinsvc.MakeHTTPHandler(endpoints, log.With(logger, "component", "http"))
 	)
 
 	errs := make(chan error)

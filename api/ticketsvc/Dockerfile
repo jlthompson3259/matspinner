@@ -10,4 +10,3 @@ COPY --from=builder /go/bin/ticketsvc /ticketsvc
 ENTRYPOINT /ticketsvc
 LABEL Name=ticketsvc Version=0.0.1
 EXPOSE 8085
-EXPOSE 8086

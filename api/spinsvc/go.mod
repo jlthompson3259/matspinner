@@ -1,4 +1,4 @@
-module github.com/jlthompson3259/matspinner/ticketsvc
+module github.com/jlthompson3259/matspinner/spinsvc
 
 go 1.19
 
