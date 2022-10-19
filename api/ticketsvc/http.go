@@ -20,9 +20,8 @@ var (
 	ErrParsingIds = errors.New("error parsing ids, should be ints")
 )
 
-func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
+func MakeHTTPHandler(e EndpointSet, logger log.Logger) http.Handler {
 	r := mux.NewRouter()
-	e := MakeServerEndpoints(s)
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 		httptransport.ServerErrorEncoder(encodeError),
