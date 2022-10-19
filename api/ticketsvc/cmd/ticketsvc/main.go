@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"syscall"
 	"ticketsvc"
 
 	"github.com/go-kit/log"
@@ -15,18 +14,18 @@ import (
 
 const (
 	defaultHttpPort = "8085"
+	defaultGrpcPort = "8086"
 )
 
 func main() {
 	var (
-		httpAddr = net.JoinHostPort("localhost", envString("HTTP_PORT", defaultHttpPort))
+		httpAddr = net.JoinHostPort("0.0.0.0", envString("HTTP_PORT", defaultHttpPort))
 	)
 
 	var logger log.Logger
 	{
 		logger = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
-		logger = level.NewFilter(logger, level.AllowDebug(), level.SquelchNoLevel(true))
-		//logger = level.NewInjector(logger, level.InfoValue())
+		logger = level.NewFilter(logger, level.AllowInfo(), level.SquelchNoLevel(true))
 		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	}
 
@@ -44,7 +43,7 @@ func main() {
 	errs := make(chan error)
 	go func() {
 		c := make(chan os.Signal, 1)
-		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		signal.Notify(c, os.Interrupt)
 		errs <- fmt.Errorf("%s", <-c)
 	}()
 

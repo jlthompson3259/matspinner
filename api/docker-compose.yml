@@ -1,0 +1,11 @@
+version: "3.4"
+
+services:
+  ticketsvc:
+    image: matspinner/ticketsvc
+    build:
+      context: ./ticketsvc
+      dockerfile: ./Dockerfile
+    ports:
+      - 8085:8085
+      - 8086:8086
