@@ -84,9 +84,7 @@ type getLastRequest struct {
 
 type response struct {
 	Result SpinResult `json:"result,omitempty"`
-	Error  error      `json:"error,omitempty"`
+	Err    error      `json:"err,omitempty"`
 }
 
-func (r response) error() error {
-	return r.Error
-}
+func (r response) error() error { return r.Err }

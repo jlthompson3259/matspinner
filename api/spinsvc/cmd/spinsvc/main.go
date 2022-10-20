@@ -30,7 +30,7 @@ func main() {
 		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	}
 
-	ticketService, err := ticketsvc.MakeClientEndpoints("http://localhost:8085")
+	ticketService, err := ticketsvc.MakeClientEndpoints("http://ticketsvc:8085")
 	if err != nil {
 		level.Error(logger).Log("error", err)
 	}

@@ -4,14 +4,14 @@ services:
   ticketsvc:
     image: matspinner/ticketsvc
     build:
-      context: ./ticketsvc
-      dockerfile: ./Dockerfile
+      context: ./
+      dockerfile: ./ticketsvc/Dockerfile
     ports:
       - 8085:8085
   spinsvc:
     image: matspinner/spinsvc
     build:
-      context: ./spinsvc
-      dockerfile: ./Dockerfile
+      context: ./
+      dockerfile: ./spinsvc/Dockerfile
     ports:
       - 8086:8086

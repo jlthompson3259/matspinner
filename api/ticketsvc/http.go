@@ -66,23 +66,19 @@ func decodeGetRequest(_ context.Context, r *http.Request) (interface{}, error) {
 }
 
 func decodeSetRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var tickets []Tickets
-	if err := json.NewDecoder(r.Body).Decode(&tickets); err != nil {
+	var request setRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
 	}
-	return setRequest{
-		Tickets: tickets,
-	}, nil
+	return request, nil
 }
 
 func decodeIncrementRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var ids []int
-	if err := json.NewDecoder(r.Body).Decode(&ids); err != nil {
+	var request incrementRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		return nil, err
 	}
-	return incrementRequest{
-		Ids: ids,
-	}, nil
+	return request, nil
 }
 
 // errorer is implemented by all concrete response types that may contain

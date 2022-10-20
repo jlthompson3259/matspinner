@@ -2,7 +2,7 @@
 FROM golang:alpine AS builder
 WORKDIR /go/src/app
 COPY . .
-RUN go build -o /go/bin/ticketsvc -v ./cmd/ticketsvc/main.go
+RUN go build -o /go/bin/ticketsvc -v ./ticketsvc/cmd/ticketsvc/main.go
 
 #final stage
 FROM alpine:latest

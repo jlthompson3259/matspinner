@@ -2,7 +2,7 @@
 FROM golang:alpine AS builder
 WORKDIR /go/src/app
 COPY . .
-RUN go build -o /go/bin/spinsvc -v ./cmd/spinsvc/main.go
+RUN go build -o /go/bin/spinsvc -v ./spinsvc/cmd/spinsvc/main.go
 
 #final stage
 FROM alpine:latest

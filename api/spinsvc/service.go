@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"ticketsvc"
 	"time"
 
 	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
+
+	"github.com/jlthompson3259/matspinner/ticketsvc"
 )
 
 var (
@@ -49,6 +51,7 @@ func (s *spinService) Spin(ctx context.Context, participantIds []int) (SpinResul
 		return SpinResult{}, err
 	}
 
+	level.Info(s.logger).Log("tickets", fmt.Sprintf("%v", tickets))
 	ticketSum := 0
 	for _, v := range tickets {
 		ticketSum += v.Tickets
@@ -66,6 +69,7 @@ func (s *spinService) Spin(ctx context.Context, participantIds []int) (SpinResul
 		winningTicket -= v.Tickets
 		if winningTicket < 0 {
 			winner = v.Id
+			break
 		}
 	}
 

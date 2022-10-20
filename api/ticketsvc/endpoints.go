@@ -55,7 +55,7 @@ func (e *EndpointSet) Get(ctx context.Context, ids ...int) ([]Tickets, error) {
 
 func (e *EndpointSet) Set(ctx context.Context, tickets ...Tickets) ([]Tickets, error) {
 	request := setRequest{Tickets: tickets}
-	r, err := e.GetEndpoint(ctx, request)
+	r, err := e.SetEndpoint(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (e *EndpointSet) Set(ctx context.Context, tickets ...Tickets) ([]Tickets, e
 
 func (e *EndpointSet) Increment(ctx context.Context, ids ...int) ([]Tickets, error) {
 	request := incrementRequest{Ids: ids}
-	r, err := e.GetEndpoint(ctx, request)
+	r, err := e.IncrementEndpoint(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -111,9 +111,7 @@ type setRequest struct {
 
 type response struct {
 	Tickets []Tickets `json:"tickets,omitempty"`
-	Error   error     `json:"error,omitempty"`
+	Err     error     `json:"err,omitempty"`
 }
 
-func (r response) error() error {
-	return r.Error
-}
+func (r response) error() error { return r.Err }
