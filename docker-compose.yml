@@ -15,3 +15,10 @@ services:
       dockerfile: ./spinsvc/Dockerfile
     ports:
       - 8086:8086
+  playersvc:
+    image: matspinner/playersvc
+    build:
+      context: ./
+      dockerfile: ./playersvc/Dockerfile
+    ports:
+      - 8087:8087
