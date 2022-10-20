@@ -62,10 +62,11 @@ func (svc *ticketService) Increment(ctx context.Context, ids ...int) ([]Tickets,
 func (svc *ticketService) Set(ctx context.Context, tickets ...Tickets) ([]Tickets, error) {
 	for _, t := range tickets {
 		ticks := t.Tickets
-		if ticks < 0 {
-			ticks = 0
+		if ticks <= 0 {
+			delete(svc.tickets, t.Id)
+		} else {
+			svc.tickets[t.Id] = t.Tickets
 		}
-		svc.tickets[t.Id] = t.Tickets
 		level.Debug(svc.logger).Log("debug", "set tickets", "id", t.Id, "tickets", t.Tickets)
 	}
 	return tickets, nil
