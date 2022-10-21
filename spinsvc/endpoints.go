@@ -41,7 +41,17 @@ func MakeClientEndpoints(instance string) (EndpointSet, error) {
 }
 
 func (e *EndpointSet) Spin(ctx context.Context, participantids []int) (SpinResult, error) {
-	request := spinRequest{ParticipantIds: participantids}
+	request := spinRequest{ParticipantIds: participantids, Unweighted: false}
+	r, err := e.SpinEndpoint(ctx, request)
+	if err != nil {
+		return SpinResult{}, err
+	}
+	resp := r.(response)
+	return resp.Result, nil
+}
+
+func (e *EndpointSet) SpinUnweighted(ctx context.Context, participantids []int) (SpinResult, error) {
+	request := spinRequest{ParticipantIds: participantids, Unweighted: true}
 	r, err := e.SpinEndpoint(ctx, request)
 	if err != nil {
 		return SpinResult{}, err
@@ -61,22 +71,28 @@ func (e *EndpointSet) GetLast(ctx context.Context) (SpinResult, error) {
 }
 
 func MakeSpinEndpoint(svc Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (r interface{}, err error) {
 		req := request.(spinRequest)
-		tickets, err := svc.Spin(ctx, req.ParticipantIds)
-		return response{tickets, err}, nil
+		var result SpinResult
+		if req.Unweighted {
+			result, err = svc.SpinUnweighted(ctx, req.ParticipantIds)
+		} else {
+			result, err = svc.Spin(ctx, req.ParticipantIds)
+		}
+		return response{result, err}, nil
 	}
 }
 
 func MakeGetLastEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		tickets, err := svc.GetLast(ctx)
-		return response{tickets, err}, nil
+		result, err := svc.GetLast(ctx)
+		return response{result, err}, nil
 	}
 }
 
 type spinRequest struct {
-	ParticipantIds []int
+	ParticipantIds []int `json:"participantIds"`
+	Unweighted     bool  `json:"unweighted"`
 }
 
 type getLastRequest struct {

@@ -32,6 +32,13 @@ func (mw *loggingMiddleware) Spin(ctx context.Context, participantIds []int) (re
 	return mw.next.Spin(ctx, participantIds)
 }
 
+func (mw *loggingMiddleware) SpinUnweighted(ctx context.Context, participantIds []int) (res SpinResult, err error) {
+	defer func(begin time.Time) {
+		level.Info(mw.logger).Log("method", "SpinUnweighted", "result", fmt.Sprintf("%v", res), "duration", time.Since(begin), "err", err)
+	}(time.Now())
+	return mw.next.SpinUnweighted(ctx, participantIds)
+}
+
 func (mw *loggingMiddleware) GetLast(ctx context.Context) (res SpinResult, err error) {
 	defer func(begin time.Time) {
 		level.Info(mw.logger).Log("method", "GetLast", "result", fmt.Sprintf("%v", res), "duration", time.Since(begin), "err", err)

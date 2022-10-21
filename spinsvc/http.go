@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/mux"
 
@@ -40,13 +38,11 @@ func MakeHTTPHandler(e EndpointSet, logger log.Logger) http.Handler {
 
 /** server encode/decode **/
 func decodeSpinRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var participantIds []int
-	if err := json.NewDecoder(r.Body).Decode(&participantIds); err != nil {
+	var req spinRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, err
 	}
-	return spinRequest{
-		ParticipantIds: participantIds,
-	}, nil
+	return req, nil
 }
 
 func decodeGetLastRequest(_ context.Context, r *http.Request) (interface{}, error) {
@@ -126,12 +122,4 @@ func encodeRequest(_ context.Context, req *http.Request, request interface{}) er
 	}
 	req.Body = io.NopCloser(&buf)
 	return nil
-}
-
-func encodeIdsQueryString(ids []int) (idStr string) {
-	strs := make([]string, len(ids))
-	for i, v := range ids {
-		strs[i] = fmt.Sprint(v)
-	}
-	return strings.Join(strs, ",")
 }
