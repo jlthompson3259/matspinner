@@ -22,3 +22,10 @@ services:
       dockerfile: ./playersvc/Dockerfile
     ports:
       - 8087:8087
+  ui:
+    image: matspinner/ui
+    build:
+      context: ./ui
+      dockerfile: ./Dockerfile
+    ports:
+      - 80:80
