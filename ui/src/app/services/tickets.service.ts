@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Tickets } from '../models/tickets';
+import { Tickets, TicketsResponse } from '../models/tickets';
 import { map, Observable } from 'rxjs';
 
 @Injectable({
@@ -16,9 +16,20 @@ export class TicketsService {
       })
       .pipe(map((response) => response.tickets));
   }
-}
 
-export interface TicketsResponse {
-  tickets: Tickets[];
-  error: string;
+  public incrementTickets(ids: number[]): Observable<Tickets[]> {
+    return this.http
+      .post<TicketsResponse>('/tickets/increment', {
+        ids: ids.join(','),
+      })
+      .pipe(map((response) => response.tickets));
+  }
+
+  public setTickets(tickets: Tickets[]): Observable<Tickets[]> {
+    return this.http
+      .put<TicketsResponse>('/tickets/increment', {
+        tickets: tickets,
+      })
+      .pipe(map((response) => response.tickets));
+  }
 }
